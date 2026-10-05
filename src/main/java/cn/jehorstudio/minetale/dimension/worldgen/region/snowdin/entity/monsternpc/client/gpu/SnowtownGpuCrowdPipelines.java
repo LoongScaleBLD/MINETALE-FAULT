@@ -13,6 +13,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
 
+import java.util.List;
+
 // 集中注册 GPU 人群模拟、实体顶点物化与交互拾取管线。
 @EventBusSubscriber(modid = MineTale.MODID, value = Dist.CLIENT)
 public final class SnowtownGpuCrowdPipelines {
@@ -132,16 +134,27 @@ public final class SnowtownGpuCrowdPipelines {
     private SnowtownGpuCrowdPipelines() {
     }
 
-    @SubscribeEvent
-    public static void register(RegisterRenderPipelinesEvent event) {
-        event.registerPipeline(BUILD_OCCUPANCY);
-        event.registerPipeline(UPDATE_DENSITY);
-        event.registerPipeline(UPDATE_BEHAVIOR);
-        event.registerPipeline(UPDATE_VELOCITY_REFERENCE);
-        event.registerPipeline(UPDATE_POSITION);
-        event.registerPipeline(BAKE_ENTITY_VERTICES);
-        event.registerPipeline(PICK_AGENTS);
-    }
+    /* 过去直接注册为静态渲染管线，编译出错会直接炸掉整个游戏*/
+    /* See: Issue#1 */
+//    @SubscribeEvent
+//    public static void register(RegisterRenderPipelinesEvent event) {
+//        event.registerPipeline(BUILD_OCCUPANCY);
+//        event.registerPipeline(UPDATE_DENSITY);
+//        event.registerPipeline(UPDATE_BEHAVIOR);
+//        event.registerPipeline(UPDATE_VELOCITY_REFERENCE);
+//        event.registerPipeline(UPDATE_POSITION);
+//        event.registerPipeline(BAKE_ENTITY_VERTICES);
+//        event.registerPipeline(PICK_AGENTS);
+//    }
+    public static final List<RenderPipeline> ALL = List.of(
+            BUILD_OCCUPANCY,
+            UPDATE_DENSITY,
+            UPDATE_BEHAVIOR,
+            UPDATE_VELOCITY_REFERENCE,
+            UPDATE_POSITION,
+            BAKE_ENTITY_VERTICES,
+            PICK_AGENTS
+    );
 
     private static ResourceLocation id(String path) {
         return ResourceLocation.fromNamespaceAndPath(MineTale.MODID, path);

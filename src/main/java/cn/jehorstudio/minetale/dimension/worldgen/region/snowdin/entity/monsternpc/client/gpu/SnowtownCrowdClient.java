@@ -85,7 +85,7 @@ public final class SnowtownCrowdClient {
 
     // 资源重载使全部 GPU 派生物失效，下一次渲染再按需创建。
     public static void invalidateRenderResources() {
-        SnowtownGpuCrowdRenderer.INSTANCE.close();
+        clearSectorPool();
     }
 
     private static void handlePopulation(
@@ -97,7 +97,7 @@ public final class SnowtownCrowdClient {
 
     @SubscribeEvent
     public static void extractRenderState(ExtractLevelRenderStateEvent event) {
-        if (event.getLevel() != activeLevel) {
+        if (!GpuCrowdSupportProbe.isAvailable() || event.getLevel() != activeLevel) {
             lastWorkingSectorCount = 0;
             event.getRenderState().setRenderData(FRAME_STATES, List.of());
             return;
@@ -189,6 +189,9 @@ public final class SnowtownCrowdClient {
 
     @SubscribeEvent
     public static void renderAfterEntities(RenderLevelStageEvent.AfterEntities event) {
+        if(!GpuCrowdSupportProbe.isAvailable()){
+            return;
+        }
         List<FrameState> frames = event.getLevelRenderState().getRenderData(FRAME_STATES);
         SnowtownGpuCrowdRenderer.INSTANCE.renderResidents(event, frames);
     }
@@ -196,6 +199,9 @@ public final class SnowtownCrowdClient {
     // 输入事件只消费最近一次 GPU 拾取结果
     @SubscribeEvent
     public static void onInteractionKey(InputEvent.InteractionKeyMappingTriggered event) {
+        if(!GpuCrowdSupportProbe.isAvailable()){
+            return;
+        }
         if (!event.isUseItem() || event.getHand() != InteractionHand.MAIN_HAND) {
             return;
         }
@@ -207,6 +213,9 @@ public final class SnowtownCrowdClient {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
+        if(!GpuCrowdSupportProbe.isAvailable()){
+            return;
+        }
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.level == null) {
             return;
@@ -233,6 +242,9 @@ public final class SnowtownCrowdClient {
 
     // 预测与服务端方块更新共用局部失效入口，只重建覆盖坐标的固定扇区。
     public static void onClientBlockChanged(ClientLevel level, BlockPos position) {
+        if(!GpuCrowdSupportProbe.isAvailable()){
+            return;
+        }
         if (level != activeLevel) {
             return;
         }

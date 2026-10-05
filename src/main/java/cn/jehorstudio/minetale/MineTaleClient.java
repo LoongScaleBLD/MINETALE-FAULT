@@ -10,6 +10,7 @@ import cn.jehorstudio.minetale.battle.presentation.screen.render.MaterialTexture
 import cn.jehorstudio.minetale.battle.script.BattleScriptIds;
 import cn.jehorstudio.minetale.battle.script.BattleScriptReloadListener;
 import cn.jehorstudio.minetale.configuration.client.MineTaleConfigurationScreen;
+import cn.jehorstudio.minetale.dimension.worldgen.region.snowdin.entity.monsternpc.client.gpu.GpuCrowdSupportProbe;
 import cn.jehorstudio.minetale.narrative.client.DialogueClientNetworkHandlers;
 import cn.jehorstudio.minetale.dimension.ebott.entrance.campfire.client.MysteriousCampfireSmokeParticle;
 import cn.jehorstudio.minetale.dimension.ebott.transition.client.TransitionClientNetworkHandlers;
@@ -49,6 +50,9 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.client.resources.VanillaClientListeners;
+
+import java.util.concurrent.CompletableFuture;
 
 @Mod(value = MineTale.MODID, dist = Dist.CLIENT)
 @EventBusSubscriber(
@@ -175,9 +179,16 @@ public class MineTaleClient {
             event.addListener(
                     ResourceLocation.fromNamespaceAndPath(MineTale.MODID, "snowtown_gpu_crowd"),
                     (sharedState, prepareExecutor, barrier, applyExecutor) ->
-                            java.util.concurrent.CompletableFuture.completedFuture(Boolean.TRUE)
+                            CompletableFuture.completedFuture(Boolean.TRUE)
                                     .thenCompose(barrier::wait)
-                                    .thenRunAsync(SnowtownCrowdClient::invalidateRenderResources, applyExecutor)
+                                    .thenRunAsync(()-> {
+                                        SnowtownCrowdClient.invalidateRenderResources();
+                                        GpuCrowdSupportProbe.probe();
+                                    }, applyExecutor)
+            );
+            event.addDependency(
+                    VanillaClientListeners.SHADERS,
+                    ResourceLocation.fromNamespaceAndPath(MineTale.MODID, "snowtown_gpu_crowd")
             );
         }
     }

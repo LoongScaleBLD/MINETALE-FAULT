@@ -184,8 +184,8 @@ vec3 animationFrame(
 }
 
 float gazeTarget(int agentId, float segment) {
-    float active = hash11(float(agentId) * 13.0 + segment * 61.0 + 701.0);
-    if (active < 0.38) {
+    float gazeActivation = hash11(float(agentId) * 13.0 + segment * 61.0 + 701.0);
+    if (gazeActivation < 0.38) {
         return 0.0;
     }
     float raw = hash11(float(agentId) * 29.0 + segment * 43.0 + 733.0) * 2.0 - 1.0;
